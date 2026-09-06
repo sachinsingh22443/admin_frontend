@@ -55,9 +55,85 @@ export function removeToken() {
    COMMON REQUEST
 ========================================================= */
 
+/* =========================================================
+   ADMIN TOKEN REFRESH LOCK
+
+   If several API calls receive 401 at the same time,
+   only ONE refresh request is made. All other requests
+   wait for the same refresh operation.
+========================================================= */
+
+let adminRefreshPromise: Promise<string> | null = null;
+
+async function refreshAccessTokenInternal(): Promise<string> {
+  const refreshToken = localStorage.getItem(
+    "admin_refresh_token"
+  );
+
+  if (!refreshToken) {
+    throw new Error("Admin refresh token not found.");
+  }
+
+  const response = await fetch(
+    `${BASE_URL}/admin/refresh`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        refresh_token: refreshToken,
+      }),
+    }
+  );
+
+  let data: any = null;
+
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok || !data?.access_token) {
+    throw new Error(
+      data?.detail ||
+        data?.message ||
+        "Admin session expired."
+    );
+  }
+
+  setToken(data.access_token);
+
+  if (data.refresh_token) {
+    localStorage.setItem(
+      "admin_refresh_token",
+      data.refresh_token
+    );
+  }
+
+  return data.access_token;
+}
+
+function refreshAdminAccessToken(): Promise<string> {
+  if (!adminRefreshPromise) {
+    adminRefreshPromise = refreshAccessTokenInternal()
+      .finally(() => {
+        adminRefreshPromise = null;
+      });
+  }
+
+  return adminRefreshPromise;
+}
+
+/* =========================================================
+   COMMON REQUEST
+========================================================= */
+
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
+  isRetry = false
 ): Promise<T> {
   const token = getToken();
 
@@ -86,6 +162,66 @@ async function request<T>(
     data = await response.json();
   } catch {
     data = null;
+  }
+
+  /*
+   * ACCESS TOKEN EXPIRED
+   *
+   * Try refresh only once for the original request.
+   * Never refresh /admin/refresh itself.
+   */
+  if (
+    response.status === 401 &&
+    !isRetry &&
+    endpoint !== "/admin/login" &&
+    endpoint !== "/admin/refresh"
+  ) {
+    try {
+      const newAccessToken =
+        await refreshAdminAccessToken();
+
+      const retryHeaders: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(options.headers || {}),
+        Authorization: `Bearer ${newAccessToken}`,
+      };
+
+      const retryResponse = await fetch(
+        `${BASE_URL}${endpoint}`,
+        {
+          ...options,
+          headers: retryHeaders,
+        }
+      );
+
+      let retryData: any = null;
+
+      try {
+        retryData = await retryResponse.json();
+      } catch {
+        retryData = null;
+      }
+
+      if (!retryResponse.ok) {
+        const message =
+          retryData?.detail ||
+          retryData?.message ||
+          `Request failed with status ${retryResponse.status}`;
+
+        throw new Error(message);
+      }
+
+      return retryData as T;
+    } catch {
+      /*
+       * Refresh token is also invalid/expired.
+       * Only now clear the admin session.
+       */
+      removeToken();
+      throw new Error(
+        "Your admin session has expired. Please login again."
+      );
+    }
   }
 
   if (!response.ok) {
