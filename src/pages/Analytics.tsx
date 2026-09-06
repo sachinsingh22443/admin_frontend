@@ -272,37 +272,6 @@ function getGrowthLabel(value: number) {
   return "0%";
 }
 
-function getStatusLabel(status: string) {
-  switch (status) {
-    case "pending":
-      return "Pending";
-    case "preparing":
-      return "Preparing";
-    case "out_for_delivery":
-      return "Out for delivery";
-    case "delivered":
-      return "Delivered";
-    case "cancelled":
-      return "Cancelled";
-    default:
-      return status;
-  }
-}
-
-function getStatusIcon(status: string) {
-  switch (status) {
-    case "delivered":
-      return CheckCircle2;
-    case "cancelled":
-      return XCircle;
-    case "preparing":
-      return Utensils;
-    case "out_for_delivery":
-      return Activity;
-    default:
-      return Clock3;
-  }
-}
 
 export default function Analytics() {
   const [days, setDays] = useState(30);
@@ -497,7 +466,7 @@ export default function Analytics() {
 
     return {
       active: Number(source.active || data.overview.active_subscriptions || 0),
-      new: Number(source.new || data.overview.new_subscriptions || 0),
+      new: Number(data.subscriptions?.new ?? data.overview.new_subscriptions ?? 0),
       expiring: Number(source.expiring_soon || 0),
       expired: Number(source.expired || 0),
       paused: Number(source.paused || 0),

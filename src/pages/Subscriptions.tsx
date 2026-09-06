@@ -14,7 +14,7 @@ import {
   Mail,
   ChefHat,
   Clock,
-  IndianRupee,
+  
   CheckCircle,
   Power,
   Coffee,
