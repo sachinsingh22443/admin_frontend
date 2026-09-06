@@ -1,0 +1,70 @@
+/* =========================================================
+   ADMIN PANEL GLOBAL STYLES
+   ========================================================= */
+
+.admin-panel {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection */
+::selection {
+  background: rgba(249, 115, 22, 0.2);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Remove default focus outline and use accessible ring */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #f97316;
+  outline-offset: 2px;
+}
+
+/* Input placeholder */
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8;
+}
+
+/* Tables */
+table {
+  border-collapse: collapse;
+}
+
+/* Prevent image overflow */
+img {
+  max-width: 100%;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  body {
+    overflow-x: hidden;
+  }
+}
