@@ -106,8 +106,8 @@ export default function Dashboard() {
     const result =
       await getAdminDashboard();
 
-    setData(result);
-  } catch (err: any) {
+    setData(result as DashboardData);
+    } catch (err: any) {
     console.error(
       "ADMIN DASHBOARD ERROR:",
       err

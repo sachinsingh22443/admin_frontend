@@ -219,33 +219,26 @@ interface TomorrowOrder {
 
 
 interface TomorrowOrdersResponse {
+  items?: TomorrowOrder[];
+  orders?: TomorrowOrder[];
+  data?: TomorrowOrder[];
 
-  items?: TomorrowOrder[];
+  total?: number;
+  total_count?: number;
+  count?: number;
 
-  orders?: TomorrowOrder[];
+  page?: number;
+  limit?: number;
+  pages?: number;
+  total_pages?: number;
 
-  data?: TomorrowOrder[];
-
-
-
-  total?: number;
-
-  total_count?: number;
-
-  count?: number;
-
-
-
-  page?: number;
-
-  limit?: number;
-
-  pages?: number;
-
-  total_pages?: number;
-
+  pagination?: {
+    page?: number;
+    limit?: number;
+    total?: number;
+    total_pages?: number;
+  };
 }
-
 
 
 function money(value: unknown) {
