@@ -344,8 +344,8 @@ function getDateRange(
 
 function getCustomerName(order: Order) {
   return (
-    order.customer?.name ||
-    order.customer_name ||
+    order.customer_name?.trim() ||
+    order.customer?.name?.trim() ||
     "Unknown Customer"
   );
 }
