@@ -18,8 +18,9 @@ import {
 
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAdminDashboard } from "../services/api";
 
-const API = "https://chef-backend-qh12.onrender.com";
+// const API = "https://chef-backend-qh12.onrender.com";
 
 interface DashboardData {
   success: boolean;
@@ -99,49 +100,31 @@ export default function Dashboard() {
   const [error, setError] = useState("");
 
   const fetchDashboard = useCallback(async () => {
-    try {
-      setError("");
+  try {
+    setError("");
 
-      const token = localStorage.getItem("admin_access_token");
+    const result =
+      await getAdminDashboard();
 
-      if (!token) {
-        setError("Admin authentication token not found.");
-        return;
-      }
+    setData(result);
+  } catch (err: any) {
+    console.error(
+      "ADMIN DASHBOARD ERROR:",
+      err
+    );
 
-      const response = await fetch(
-        `${API}/admin/dashboard`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    setError(
+      err?.message ||
+        "Unable to load dashboard"
+    );
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
-      const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(
-          result?.detail ||
-            "Failed to load dashboard"
-        );
-      }
 
-      setData(result);
-    } catch (err: any) {
-      console.error(
-        "ADMIN DASHBOARD ERROR:",
-        err
-      );
 
-      setError(
-        err?.message ||
-          "Unable to load dashboard"
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     fetchDashboard();
